@@ -1,9 +1,19 @@
-from flask import Flask, request, jsonify, render_template
+# from flask import Flask, request, jsonify, render_template
+# import os
+# from plagiarism_detector import check_plagiarism_offline, extract_text_from_pdf
 import os
-from plagiarism_detector import check_plagiarism_offline, extract_text_from_pdf
+from flask import Flask, request, jsonify, render_template
+from werkzeug.utils import secure_filename
+from PyPDF2 import PdfReader
+from plagiarism_detector import check_plagiarism_online, check_plagiarism_offline
 
 app = Flask(__name__)
+# Define the upload folder path
+app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'uploads')  # Adjust the path as needed
 
+# Create the uploads directory if it doesn't exist
+if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    os.makedirs(app.config['UPLOAD_FOLDER'])
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -56,6 +66,42 @@ def check_offline():
         })
 
     return jsonify({'copied': False, 'message': "No matching sources found."})
+
+# Route to check plagiarism online
+@app.route('/check_online', methods=['POST'])
+def check_online():
+    text = request.form.get('text', '')
+    upload_file = request.files.get('file')
+
+    # If a file is uploaded, extract text from the PDF
+    if upload_file:
+        filename = secure_filename(upload_file.filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        upload_file.save(filepath)
+        text = extract_text_from_pdf(filepath)  # Use the text from the PDF
+
+    print(f"Checking Online for Text: {text[:100]}...")  # Log the first 100 characters of the text for debugging
+
+    # Check plagiarism using online sources
+    online_results = check_plagiarism_online(text)
+    print(f"Online Results: {online_results}")  # Log the results for debugging
+
+    return jsonify(online_results)
+
+
+def extract_text_from_pdf(file_path):
+    try:
+        reader = PdfReader(file_path)
+        text = ''
+        for page in reader.pages:
+            page_text = page.extract_text() or ''
+            text += page_text
+        print(f"Extracted Text from {file_path}: {text[:100]}...")  # Log the first 100 characters for debug
+        return text
+    except Exception as e:
+        print(f"Error extracting text from {file_path}: {e}")  # Log any errors
+        return ''
+
 
 if __name__ == '__main__':
     app.run(debug=True)
