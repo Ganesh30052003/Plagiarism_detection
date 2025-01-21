@@ -9,8 +9,8 @@ import time  # Import time module for timing functionality
 
 # Online plagiarism checking using Google Custom Search API
 def check_plagiarism_online(input_text):
-    api_key = 'YOUR_API_KEY'  # Replace with your actual API key
-    engine_id = 'YOUR_ENGINE_ID'  # Replace with your actual engine ID
+    api_key = 'AIzaSyCqvaeUTAlnmS6OE07aofH7a5VvfWwXu2U'  # Replace with your actual API key
+    engine_id = '46e309481c1b4431f'  # Replace with your actual engine ID
 
     # Make a request to Google Custom Search API
     search_url = f"https://www.googleapis.com/customsearch/v1?key={api_key}&cx={engine_id}&q={input_text}"
