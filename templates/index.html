@@ -67,7 +67,53 @@
 </head>
 <body>
     <h1>Plagiarism Detection System</h1>
+     <!-- Form to check plagiarism online -->
+     <form id="onlineForm">
+        <textarea id="onlineTextInput" placeholder="Enter text to check..."></textarea>
+        <label for="onlineCheckFile">Upload a PDF file for online checking:</label>
+        <input type="file" id="onlineCheckFile" accept="application/pdf">
+        <button type="submit">Check Online Plagiarism</button>
+    </form>
+    <div id="onlineResults"></div>
 
+    
+    <script>
+        // Check plagiarism online
+        document.getElementById('onlineForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const text = document.getElementById('onlineTextInput').value;
+            const file = document.getElementById('onlineCheckFile').files[0];
+
+            const formData = new FormData();
+            formData.append('text', text);
+            if (file) {
+                formData.append('file', file);
+            }
+
+            const response = await fetch('/check_online', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+
+            let output = '<h3>Online Plagiarism Results:</h3>';
+            
+            // Display online plagiarism results
+            if (result.copied) {
+                output += '<h4>Matching Sources:</h4>';
+                result.sources.forEach(source => {
+                    output += `<p>Source: <a href="${source.source}" target="_blank">${source.source}</a></p>`;
+                    output += `<p>Matching Text: <span style="background-color: yellow;">${source.matching_text}</span></p>`;
+                });
+                output += `<p>Online Copied Percentage: ${result.percentage_copied.toFixed(2)}%</p>`;
+            } else {
+                output += '<p>No matching sources found.</p>';
+            }
+
+            document.getElementById('onlineResults').innerHTML = output;
+        });
+
+    </script>
     <!-- Form to upload multiple PDFs for offline storage -->
     <form id="storeForm" action="/store_files" method="POST" enctype="multipart/form-data">
         <label for="storeFiles">Upload PDF files for storage (Offline Mode):</label>
@@ -90,8 +136,8 @@
             <thead>
                 <tr>
                     <th>Source</th>
-                    <th>Sequence Matching (%)</th>
-                    <th>Time Taken (Sequence Matching)</th>
+                    <th>String Matching (%)</th>
+                    <th>Time Taken (String Matching)</th>
                     <th>Cosine Similarity (%)</th>
                     <th>Time Taken (Cosine Similarity)</th>
                     <!-- Removed LCS and time columns -->
@@ -179,5 +225,7 @@
             }
         });
     </script>
+    
+    
 </body>
 </html>
