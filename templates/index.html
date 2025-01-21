@@ -114,28 +114,12 @@
         });
 
     </script>
-    
-    document.getElementById('storeForm').addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const files = document.getElementById('storeFiles').files;
-
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            
-            // Create a download link for each file
-            const url = URL.createObjectURL(file);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = file.name;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
-
-        alert('Files downloaded locally!');
-    });
-
-
+    <!-- Form to upload multiple PDFs for offline storage -->
+    <form id="storeForm" action="/store_files" method="POST" enctype="multipart/form-data">
+        <label for="storeFiles">Upload PDF files for storage (Offline Mode):</label>
+        <input type="file" id="storeFiles" name="files" multiple accept="application/pdf">
+        <button type="submit">Store Files</button>
+    </form>
     <div id="storeResult"></div>
 
     <!-- Form to check plagiarism offline -->
