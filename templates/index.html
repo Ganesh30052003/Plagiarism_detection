@@ -5,163 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plagiarism Detection System</title>
     <link rel="stylesheet" href="/static/styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <style>
-
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #e1f5ff;
-            color: #333;
-        }
-
-        h1 {
-            text-align: center;
-            background-color: #007BFF;
-            color: #fff;
-            padding: 20px 0;
-            margin: 0;
-            font-size: 2.5rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        form {
-            max-width: 800px;
-            margin: 20px auto;
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        textarea {
-            width: 96%;
-            height: 150px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 10px;
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
-
-        input[type="file"],
-        button {
-            display: block;
-            width: 100%;
-            margin: 10px 0;
-            padding: 10px;
-            font-size: 16px;
-            border: none;
-            border-radius: 4px;
-        }
-
-        input[type="file"] {
-            background-color: #e9ecef;
-            color: #495057;
-        }
-
-        button {
-            background-color: #007BFF;
-            color: #fff;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            width: auto
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        #resultsTable {
-            width: 90%;
-            margin: 20px auto;
-            border-collapse: collapse;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            background: #fff;
-        }
-
-        #resultsTable th, #resultsTable td {
-            padding: 12px;
-            border: 1px solid #ddd;
-            text-align: left;
-        }
-
-        #resultsTable th {
-            background-color: #007BFF;
-            color: white;
-            font-size: 1rem;
-        }
-
-        #resultsTable tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-
-        #detailedCopiedTextContainer {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            animation: fadeIn 1s ease-in-out;
-        }
-
-        .file-copied-text {
-            margin: 10px 0;
-            padding: 15px;
-            border: 1px solid #007BFF;
-            border-radius: 8px;
-            background-color: #e9f4ff;
-            transition: transform 0.3s;
-        }
-
-        .file-copied-text:hover {
-            transform: scale(1.02);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .copiedText {
-            color: #333;
-            font-size: 14px;
-            line-height: 1.6;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
-
-        #printResults, #downloadResults {
-            width: 45%;
-            margin: 10px 2%;
-            display: inline-block;
-            text-align: center;
-            font-size: 16px;
-        }
-
-        #offlineResults, #onlineResults {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        a {
-            color: #007BFF;
-            text-decoration: none;
-        }
-
-        a:hover {
-            text-decoration: underline;
-        }      
+        /* Styles for the results table */
         #resultsTable {
             width: 100%;
             border-collapse: collapse;
@@ -217,11 +62,6 @@
             color: #495057;  /* Darker text color for better readability */
             font-size: 14px;  /* Font size for copied text */
         }
-        .buttonres{
-            padding-left: 35%;
-            padding-right: 35%;
-        }
-       
     </style>
     
 </head>
@@ -234,178 +74,47 @@
         <input type="file" id="onlineCheckFile" accept="application/pdf">
         <button type="submit">Check Online Plagiarism</button>
     </form>
-    <div id="onlineResults"><hr></div>
-    <div class="buttonres">
-    <button id="printResults" style="display:none;">Print Results</button>
-    <button id="downloadResults" style="display:none;">Download Results</button>
-    </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script>
-    // Handle plagiarism check online
-    document.getElementById('onlineForm').addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const text = document.getElementById('onlineTextInput').value;
-        const file = document.getElementById('onlineCheckFile').files[0];
+    <div id="onlineResults"></div>
 
-        const formData = new FormData();
-        formData.append('text', text);
-        if (file) {
-            formData.append('file', file);
-        }
-
-        const response = await fetch('/check_online', {
-            method: 'POST',
-            body: formData
-        });
-        const result = await response.json();
-
-        let output = '<h3>Online Plagiarism Results:</h3>';
-
-        // Display online plagiarism results
-        if (result.copied) {
-            output += '<h4>Matching Sources:</h4>';
-            result.sources.forEach(source => {
-                output += `<p>Source: <a href="${source.source}" target="_blank">${source.source}</a></p>`;
-                output += `<p>Matching Text: <span style="background-color: yellow;">${source.matching_text}</span></p>`;
-            });
-            const copiedPercentage = result.percentage_copied.toFixed(2);
-            output += `<h2 class="highlighted">Online Copied Percentage: ${copiedPercentage}%</h2>`;
-            output += '<canvas id="pieChart" style="max-width: 400px; margin: 20px auto;"></canvas>';
-        } else {
-            output += '<p>No matching sources found.</p>';
-        }
-
-        const resultsDiv = document.getElementById('onlineResults');
-        resultsDiv.innerHTML = output;
-
-        // Generate the pie chart if results are available
-        if (result.copied) {
-            const ctx = document.getElementById('pieChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: ['Copied', 'Original'],
-                    datasets: [{
-                        data: [result.percentage_copied, 100 - result.percentage_copied],
-                        backgroundColor: ['#FF5733', '#33FF57']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                        }
-                    }
-                }
-            });
-        }
-
-        // Show the print and download buttons
-        document.getElementById('printResults').style.display = 'inline-block';
-        document.getElementById('downloadResults').style.display = 'inline-block';
-    });
-
-    // Print Results
-    document.getElementById('printResults').addEventListener('click', function () {
-        const resultsDiv = document.getElementById('onlineResults');
-        const canvas = document.querySelector('#pieChart');
-
-        if (canvas) {
-            // Convert canvas to image
-            const imgData = canvas.toDataURL('image/png');
-            const imgElement = `<img src="${imgData}" style="max-width: 100%; margin: 20px auto;"/>`;
-            const content = resultsDiv.innerHTML.replace('<canvas id="pieChart"', imgElement);
-
-            const styles = `<style>
-                body { font-family: Arial, sans-serif; color: #333; line-height: 1.6; }
-                h3, h4 { color: #0056b3; }
-                p { margin: 5px 0; }
-                a { color: #0056b3; text-decoration: none; }
-                a:hover { text-decoration: underline; }
-                .highlighted { font-size: 1.5em; font-weight: bold; color: #FF5733; text-align: center; margin-top: 20px; }
-                span[style] { background-color: yellow; padding: 2px; }
-            </style>`;
-
-            const printWindow = window.open('', '_blank');
-            printWindow.document.open();
-            printWindow.document.write(`
-                <html>
-                    <head><title>Plagiarism Results</title>${styles}</head>
-                    <body>${content}</body>
-                </html>
-            `);
-            printWindow.document.close();
-            printWindow.print();
-        }
-    });
-
-    // Download Results
     
-    document.getElementById('downloadResults').addEventListener('click', async function () {
-        const { jsPDF } = window.jspdf;
-        const resultsDiv = document.getElementById('onlineResults');
-        const pdf = new jsPDF('p', 'mm', 'a4');
+    <script>
+        // Check plagiarism online
+        document.getElementById('onlineForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const text = document.getElementById('onlineTextInput').value;
+            const file = document.getElementById('onlineCheckFile').files[0];
 
-        const pageWidth = pdf.internal.pageSize.getWidth(); // PDF page width
-        const pageHeight = pdf.internal.pageSize.getHeight(); // PDF page height
-        const margin = 10; // Margin size
-        const contentWidth = pageWidth - 2 * margin; // Content width
-        const contentHeight = pageHeight - 2 * margin; // Content height
-
-        try {
-            // Capture the resultsDiv as a canvas image
-            const canvas = await html2canvas(resultsDiv, { scale: 2 });
-            const imgData = canvas.toDataURL('image/png'); // Convert canvas to image
-
-            const imgProps = pdf.getImageProperties(imgData);
-            const imgWidth = contentWidth; // Scale image to fit the width of the page
-            const imgHeight = (imgProps.height * imgWidth) / imgProps.width; // Maintain aspect ratio
-
-            let yOffset = margin; // Start position for the first page
-
-            // If content fits in one page
-            if (imgHeight <= contentHeight) {
-                pdf.addImage(imgData, 'PNG', margin, yOffset, imgWidth, imgHeight);
-            } else {
-                // If content needs multiple pages
-                let remainingHeight = imgHeight;
-
-                while (remainingHeight > 0) {
-                    const currentHeight = Math.min(remainingHeight, contentHeight);
-                    pdf.addImage(
-                        imgData,
-                        'PNG',
-                        margin,
-                        yOffset,
-                        imgWidth,
-                        currentHeight,
-                        undefined,
-                        'FAST' // Improve rendering speed
-                    );
-                    remainingHeight -= contentHeight;
-
-                    if (remainingHeight > 0) {
-                        pdf.addPage();
-                        yOffset = margin;
-                    }
-                }
+            const formData = new FormData();
+            formData.append('text', text);
+            if (file) {
+                formData.append('file', file);
             }
 
-            // Prevent jsPDF from adding unnecessary blank pages
-            pdf.deletePage(pdf.getNumberOfPages());
+            const response = await fetch('/check_online', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
 
-            // Save the generated PDF
-            pdf.save('plagiarism_results.pdf');
-        } catch (error) {
-            console.error('Error generating PDF:', error);
-            alert('An error occurred while generating the PDF. Please try again.');
-        }
-    });
-</script>
+            let output = '<h3>Online Plagiarism Results:</h3>';
+            
+            // Display online plagiarism results
+            if (result.copied) {
+                output += '<h4>Matching Sources:</h4>';
+                result.sources.forEach(source => {
+                    output += `<p>Source: <a href="${source.source}" target="_blank">${source.source}</a></p>`;
+                    output += `<p>Matching Text: <span style="background-color: yellow;">${source.matching_text}</span></p>`;
+                });
+                output += `<p>Online Copied Percentage: ${result.percentage_copied.toFixed(2)}%</p>`;
+            } else {
+                output += '<p>No matching sources found.</p>';
+            }
 
-        <!-- Form to upload multiple PDFs for offline storage -->
+            document.getElementById('onlineResults').innerHTML = output;
+        });
+
+    </script>
+    <!-- Form to upload multiple PDFs for offline storage -->
     <form id="storeForm" action="/store_files" method="POST" enctype="multipart/form-data">
         <label for="storeFiles">Upload PDF files for storage (Offline Mode):</label>
         <input type="file" id="storeFiles" name="files" multiple accept="application/pdf">
